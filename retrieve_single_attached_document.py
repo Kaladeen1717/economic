@@ -30,6 +30,7 @@ class AttachedDocumentRetriever:
         """
         self.auth = auth
         self.company_name = company_name
+        self.session = requests.Session()
     
     def get_attached_document(self, document_number: int) -> Dict:
         """
@@ -44,7 +45,7 @@ class AttachedDocumentRetriever:
         url = f"{self.BASE_URL}{self.ATTACHED_DOCS_ENDPOINT}/{document_number}"
             
         # Make API request
-        response = requests.get(
+        response = self.session.get(
             url, 
             headers=self.auth.get_auth_headers()
         )
@@ -67,7 +68,7 @@ class AttachedDocumentRetriever:
         url = f"{self.BASE_URL}{self.ATTACHED_DOCS_ENDPOINT}/{document_number}/pdf"
             
         # Make API request
-        response = requests.get(
+        response = self.session.get(
             url, 
             headers=self.auth.get_auth_headers()
         )
@@ -98,7 +99,7 @@ class AttachedDocumentRetriever:
             params["filter"] = filter_params
             
         # Make API request
-        response = requests.get(
+        response = self.session.get(
             url, 
             headers=self.auth.get_auth_headers(),
             params=params
@@ -137,7 +138,7 @@ class AttachedDocumentRetriever:
         }
             
         # Make API request
-        response = requests.get(
+        response = self.session.get(
             url, 
             headers=self.auth.get_auth_headers(),
             params=params
@@ -257,6 +258,10 @@ class AttachedDocumentRetriever:
             json.dump(data, f, indent=2)
             
         return file_path
+
+    def __del__(self):
+        """Cleanup method to ensure session is closed."""
+        self.session.close()
 
 
 def get_auth_credentials_path(creds_filename: str) -> str:
