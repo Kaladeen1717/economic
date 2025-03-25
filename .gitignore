@@ -1,0 +1,29 @@
+# Python virtual environment
+venv/
+env/
+.env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Data output
+data_output/
+
+# Credentials
+authentication_schemas/*credentials.json
+!authentication_schemas/credentials_template.json
+
+# IDE files
+.idea/
+.vscode/
+
+# OS specific files
+.DS_Store
+Thumbs.db 
