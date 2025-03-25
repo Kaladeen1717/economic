@@ -23,7 +23,7 @@ python invoice_lines.py --creds-file [company_name]_credentials.json
 
 With custom output filename:
 ```
-python invoice_lines.py --creds-file [company_name]_credentials.json --output my_custom_filename.json
+python invoice_lines.py --creds-file [company_name]_credentials.json --output my_custom_filename.jsonl
 ```
 
 Using demo mode:
@@ -45,10 +45,12 @@ python invoice_lines.py --list-creds
 
 #### Output
 
-The script outputs a JSON file in the `data_output/` directory with the naming convention:
+The script outputs a newline-delimited JSON file in the `data_output/` directory with the naming convention:
 ```
-invoice_lines_[company_name]_YYYYMMDD_HHMMSS.json
+invoice_lines_[company_name]_YYYYMMDD_HHMMSS.jsonl
 ```
+
+Each line in the output file is a complete JSON object representing one invoice line, making it easy to process large datasets line by line.
 
 ### 2. Retrieving Attached Documents
 
@@ -68,7 +70,7 @@ python retrieve_single_attached_document.py --creds-file [company_name]_credenti
 
 List all available documents:
 ```
-python retrieve_single_attached_document.py --creds-file [company_name]_credentials.json --list-all
+python retrieve_single_attached_document.py --creds-file [company_name]_credentials.json --list-docs
 ```
 
 #### Arguments
@@ -76,16 +78,19 @@ python retrieve_single_attached_document.py --creds-file [company_name]_credenti
 - `--creds-file`: Path to the credentials file (optional with --demo)
 - `--document-number`: Specific document number to retrieve
 - `--voucher-number`: Retrieve all documents with this voucher number
-- `--list-all`: List all available documents
-- `--download-pdf`: Download the PDF file for the document
-- `--output-dir`: Directory to save PDFs (default: 'data_output/pdfs/')
+- `--list-docs`: List all available documents
+- `--get-pdf`: Also retrieve and save the PDF file for the document
+- `--output`: Custom output filename (default: document-number-based filename)
+- `--filter`: Filter expression for API query when listing documents
+- `--limit`: Maximum number of documents to retrieve when listing (default: 100)
 - `--demo`: Use demo authentication instead of credentials file
 
 #### Output
 
-- Document metadata is saved as `attached_document_[company_name]_[document_number].json`
-- PDF files (if requested) are saved as `attached_document_[company_name]_[document_number].pdf`
-- Voucher search results are saved as `voucher_[company_name]_[voucher_number].json`
+- Document metadata is saved as newline-delimited JSON: `attached_document_[company_name]_[document_number].jsonl`
+- PDF files (if requested) are saved as: `attached_document_[company_name]_[document_number].pdf`
+- Voucher search results are saved as newline-delimited JSON: `voucher_[company_name]_[voucher_number].jsonl`
+- Document lists are saved as newline-delimited JSON: `attached_documents_list_[company_name].jsonl`
 
 ### 3. Retrieving Booked Entries
 
@@ -125,10 +130,12 @@ python retrieve_all_booked_entries.py --list-creds
 
 #### Output
 
-The script outputs a JSON file in the `data_output/` directory with the naming convention:
+The script outputs a newline-delimited JSON file in the `data_output/` directory with the naming convention:
 ```
-booked_entries_[company_name]_YYYYMMDD_HHMMSS.json
+booked_entries_[company_name]_YYYYMMDD_HHMMSS.jsonl
 ```
+
+Each line in the output file is a complete JSON object representing one booked entry.
 
 ## Authentication
 
@@ -144,8 +151,10 @@ These are stored in a credentials file in the `authentication_schemas/` director
 Example credentials file format:
 ```json
 {
-  "app_secret_token": "your_app_secret_token",
-  "agreement_grant_token": "your_agreement_grant_token"
+  "economic_api": {
+    "app_secret_token": "your_app_secret_token",
+    "agreement_grant_token": "your_agreement_grant_token"
+  }
 }
 ```
 
@@ -157,3 +166,13 @@ To use demo mode, simply add the `--demo` flag to any command:
 ```
 python invoice_lines.py --demo
 ```
+
+## Output Formats
+
+All data output files use newline-delimited JSON format (`.jsonl`), where each line is a complete, valid JSON object. This format:
+- Is more memory efficient for large datasets
+- Allows line-by-line processing
+- Makes it easy to append new records
+- Is compatible with many data processing tools
+
+PDF files are saved in their original binary format with `.pdf` extension.

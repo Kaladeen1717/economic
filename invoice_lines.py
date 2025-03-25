@@ -103,7 +103,7 @@ class InvoiceLineRetriever:
         Save data to JSON file in the data_output directory.
         
         Args:
-            data: Data to save
+            data: Data to save (if List, saves as newline-delimited JSON)
             filename: Optional filename, defaults to timestamp-based name
             
         Returns:
@@ -114,13 +114,15 @@ class InvoiceLineRetriever:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             # Include company name in the filename if available
             if self.company_name:
-                filename = f"invoice_lines_{self.company_name}_{timestamp}.json"
+                filename = f"invoice_lines_{self.company_name}_{timestamp}.jsonl"
             else:
-                filename = f"invoice_lines_{timestamp}.json"
+                filename = f"invoice_lines_{timestamp}.jsonl"
         
-        # Ensure filename has .json extension
-        if not filename.endswith('.json'):
-            filename += '.json'
+        # Ensure filename has .jsonl extension for newline-delimited JSON
+        if filename.endswith('.json'):
+            filename = filename[:-5] + '.jsonl'
+        elif not filename.endswith('.jsonl'):
+            filename += '.jsonl'
             
         # Build full path to output directory
         output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_output")
@@ -131,7 +133,13 @@ class InvoiceLineRetriever:
         
         # Write data to file
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
+            if isinstance(data, list):
+                # Write each item as a separate line
+                for item in data:
+                    f.write(json.dumps(item) + '\n')
+            else:
+                # If not a list, write as a single JSON object
+                f.write(json.dumps(data) + '\n')
             
         return file_path
 

@@ -154,7 +154,7 @@ class AttachedDocumentRetriever:
         Save document metadata to JSON file in the data_output directory.
         
         Args:
-            data: Document metadata to save
+            data: Document metadata to save (as newline-delimited JSON)
             filename: Optional filename, defaults to timestamp-based name
             
         Returns:
@@ -169,20 +169,22 @@ class AttachedDocumentRetriever:
             doc_number = data.get("number", "unknown")
             # Include company name in the filename if available
             if self.company_name:
-                filename = f"attached_document_{self.company_name}_{doc_number}.json"
+                filename = f"attached_document_{self.company_name}_{doc_number}.jsonl"
             else:
-                filename = f"attached_document_{doc_number}.json"
+                filename = f"attached_document_{doc_number}.jsonl"
         
-        # Ensure filename has .json extension
-        if not filename.endswith('.json'):
-            filename += '.json'
+        # Ensure filename has .jsonl extension
+        if filename.endswith('.json'):
+            filename = filename[:-5] + '.jsonl'
+        elif not filename.endswith('.jsonl'):
+            filename += '.jsonl'
         
         # Full path to output file
         file_path = os.path.join(output_dir, filename)
         
         # Write data to file
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
+            f.write(json.dumps(data) + '\n')
             
         return file_path
     
@@ -228,7 +230,7 @@ class AttachedDocumentRetriever:
         Save a list of documents to JSON file in the data_output directory.
         
         Args:
-            data: List of document data to save
+            data: List of document data to save (as newline-delimited JSON)
             filename: Optional filename, defaults to company-based name
             
         Returns:
@@ -242,20 +244,23 @@ class AttachedDocumentRetriever:
         if not filename:
             # Include company name in the filename if available
             if self.company_name:
-                filename = f"attached_documents_list_{self.company_name}.json"
+                filename = f"attached_documents_list_{self.company_name}.jsonl"
             else:
-                filename = f"attached_documents_list.json"
+                filename = f"attached_documents_list.jsonl"
         
-        # Ensure filename has .json extension
-        if not filename.endswith('.json'):
-            filename += '.json'
+        # Ensure filename has .jsonl extension
+        if filename.endswith('.json'):
+            filename = filename[:-5] + '.jsonl'
+        elif not filename.endswith('.jsonl'):
+            filename += '.jsonl'
         
         # Full path to output file
         file_path = os.path.join(output_dir, filename)
         
         # Write data to file
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
+            for item in data:
+                f.write(json.dumps(item) + '\n')
             
         return file_path
 
@@ -437,9 +442,9 @@ def main():
                     # Create filename for voucher document list
                     if not args.output:
                         if company_name:
-                            voucher_filename = f"voucher_{company_name}_{args.voucher_number}.json"
+                            voucher_filename = f"voucher_{company_name}_{args.voucher_number}.jsonl"
                         else:
-                            voucher_filename = f"voucher_{args.voucher_number}.json"
+                            voucher_filename = f"voucher_{args.voucher_number}.jsonl"
                     else:
                         voucher_filename = args.output
                     
@@ -519,7 +524,7 @@ def main():
                 pdf_data = retriever.get_attached_document_pdf(args.document_number)
                 
                 # Save PDF to file
-                pdf_filename = args.output.replace('.json', '.pdf') if args.output else None
+                pdf_filename = args.output.replace('.jsonl', '.pdf') if args.output else None
                 pdf_path = retriever.save_document_pdf(args.document_number, pdf_data, filename=pdf_filename)
                 print(f"PDF file saved to: {pdf_path}")
             
